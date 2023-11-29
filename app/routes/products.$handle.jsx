@@ -10,6 +10,10 @@ import {
   CartForm,
 } from '@shopify/hydrogen';
 import {getVariantUrl} from '~/utils';
+import {
+  FastSimonWidget,
+  getVisualSimilarityProducts,
+} from '@fast-simon/storefront-kit';
 
 /**
  * @type {MetaFunction<typeof loader>}
@@ -76,7 +80,13 @@ export async function loader({params, request, context}) {
     variables: {handle},
   });
 
-  return defer({product, variants});
+  const visualSimilarityProducts = getVisualSimilarityProducts({
+    UUID: '3eb6c1d2-152d-4e92-9c29-28eecc232373',
+    productId: product.id,
+    storeId: '55906173135',
+  });
+  return defer({product, variants, visualSimilarityProducts});
+
 }
 
 /**
@@ -104,17 +114,40 @@ function redirectToFirstVariant({product, request}) {
 
 export default function Product() {
   /** @type {LoaderReturnData} */
-  const {product, variants} = useLoaderData();
+  const {product, variants, visualSimilarityProducts} = useLoaderData();
   const {selectedVariant} = product;
   return (
-    <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <ProductMain
-        selectedVariant={selectedVariant}
-        product={product}
-        variants={variants}
+    <div>
+      <div className="product">
+        <ProductImage image={selectedVariant?.image} />
+        <ProductMain
+          selectedVariant={selectedVariant}
+          product={product}
+          variants={variants}
+        />
+      </div>
+      <FastSimonWidget
+        title={'Visually Similar Products By Fast Simon'}
+        products={visualSimilarityProducts}
+        breakpoints={{
+          mobile: 2,
+          tablet: 3,
+          desktop: 4,
+        }}
+        RightArrowIcon={
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="1em"
+            fill="white"
+            viewBox="0 0 448 512"
+          >
+            <path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z" />
+          </svg>
+        }
+        imageAspectRatio="3/4"
       />
     </div>
+
   );
 }
 
@@ -238,11 +271,11 @@ function ProductForm({product, selectedVariant, variants}) {
         lines={
           selectedVariant
             ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                },
-              ]
+              {
+                merchandiseId: selectedVariant.id,
+                quantity: 1,
+              },
+            ]
             : []
         }
       >
