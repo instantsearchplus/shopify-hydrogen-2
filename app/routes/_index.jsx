@@ -52,7 +52,7 @@ function FeaturedCollection({collection}) {
     >
       {image && (
         <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
+          <Image data={image} sizes="100vw" aspectRatio={'1'} />
         </div>
       )}
       <h1>{collection.title}</h1>
@@ -115,7 +115,6 @@ const FEATURED_COLLECTION_QUERY = `#graphql
     }
   }
 `;
-
 
 const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   fragment RecommendedProduct on Product {
