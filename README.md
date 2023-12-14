@@ -9,6 +9,8 @@ Build Search and Discovery experience with Fast Simon, a Shopify Plus Certified 
 
 - This demo store is a clone of the demo-store template provided by Shopify with examples of how to integrate the Fast Simon Visual Similarity.
 
+- [Check out the Visual Similarity feature in a Shopify Hydrogen demo store](https://shopify-hydrogen-2-b10004a9e68ce7a318e7.o2.myshopify.dev/products/mens-muscle-top)
+
 [Check out Hydrogen docs](https://shopify.dev/custom-storefronts/hydrogen)
 [Get familiar with Remix](https://remix.run/docs/en/v1)
 
