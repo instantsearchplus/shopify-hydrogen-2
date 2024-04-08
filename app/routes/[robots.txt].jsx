@@ -58,7 +58,6 @@ function robotsTxtData({url, shopId}) {
   return `
 User-agent: *
 ${generalDisallowRules({sitemapUrl, shopId})}
-
 # Google adsbot ignores robots.txt unless specifically named!
 User-agent: adsbot-google
 Disallow: /checkouts/
@@ -100,6 +99,8 @@ Crawl-delay: 1
  */
 function generalDisallowRules({shopId, sitemapUrl}) {
   return `Disallow: /admin
+Disallow: /products/
+Disallow: /collections/
 Disallow: /cart
 Disallow: /orders
 Disallow: /checkouts/
