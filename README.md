@@ -178,8 +178,8 @@ Don't worry about the left icon, we are rotating the icon automatically.
 
 ## Smart Collections Usage
 ### Adding Fast Simon fetcher function to the root loader
-- import `getSmartCollection` from `@fast-simon/storefront-kit` into the product page root file
-- Invoke `getSmartCollection` in your root loader function, passing the product id as a prop
+- import `getSmartCollection` from `@fast-simon/storefront-kit` into the collection handle file
+- Invoke `getSmartCollection` in your root loader function, passing category URL, uuid and store id as props
 - Pass down the results to the collection component.
 
 ```js
