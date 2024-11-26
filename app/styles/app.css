@@ -418,6 +418,10 @@ aside li {
   width: 100%;
 }
 
+.products-grid .product-item img {
+    object-fit: cover;
+}
+
 .product-main {
   align-self: start;
   position: sticky;
