@@ -2,6 +2,7 @@ import {Link, Form, useParams, useFetcher, useFetchers} from '@remix-run/react';
 import {Image, Money, Pagination} from '@shopify/hydrogen';
 import React, {useRef, useEffect} from 'react';
 import {useVariantUrl} from '~/utils';
+import {PaginationBar} from '~/components/FastSimonPagination';
 
 export const NO_PREDICTIVE_SEARCH_RESULTS = [
   {type: 'queries', items: []},
@@ -55,7 +56,7 @@ export function SearchForm({searchTerm}) {
 /**
  * @param {Pick<FetchSearchResultsReturn['searchResults'], 'results'>}
  */
-export function SearchResults({results}) {
+export function SearchResults({results, totalPages}) {
 
   if (!results) {
     return null;
@@ -67,13 +68,17 @@ export function SearchResults({results}) {
       {results &&
         keys.map((type) => {
           const resourceResults = results[type];
-            const productResults = resourceResults;
-            return resourceResults.nodes.length ? (
+          const productResults = resourceResults;
+          return resourceResults.nodes.length ? (
+            <div>
               <ProductsGrid
                 key="products"
                 products={results.products.nodes}
               />
-            ) : null;
+              <br />
+              <PaginationBar total={totalPages} />
+            </div>
+          ) : null;
         })}
     </div>
   );
@@ -222,12 +227,12 @@ export function NoSearchResults() {
  * @param {SearchFromProps}
  */
 export function PredictiveSearchForm({
-  action,
-  children,
-  className = 'predictive-search-form',
-  method = 'POST',
-  ...props
-}) {
+                                       action,
+                                       children,
+                                       className = 'predictive-search-form',
+                                       method = 'POST',
+                                       ...props
+                                     }) {
   const params = useParams();
   const fetcher = useFetcher();
   const inputRef = useRef(null);

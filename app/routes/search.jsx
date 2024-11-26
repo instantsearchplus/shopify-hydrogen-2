@@ -53,7 +53,7 @@ export async function loader({request, context}) {
     ...fastSimonSearchResults,
     totalResults: fastSimonSearchResults?.total_results,
   };
-  console.log("searchResults: ", searchResults);
+  //console.log("searchResults: ", searchResults);
   return defer({searchTerm, searchResults});
 
 }
@@ -61,7 +61,7 @@ export async function loader({request, context}) {
 export default function SearchPage() {
   /** @type {LoaderReturnData} */
   const {searchTerm, searchResults} = useLoaderData();
-  console.log({"searchResults.results": searchResults.results, "searchResults.totalResults": searchResults.totalResults, searchTerm});
+  //console.log({"searchResults.results": searchResults.results, "searchResults.totalResults": searchResults.totalResults, searchTerm});
   return (
     <div className="search">
       <h1>Search</h1>
@@ -69,7 +69,7 @@ export default function SearchPage() {
       {!searchTerm || !searchResults.totalResults ? (
         <NoSearchResults />
       ) : (
-        <SearchResults results={searchResults.results} />
+        <SearchResults results={searchResults.results} totalPages={searchResults.total_p}/>
       )}
     </div>
   );
