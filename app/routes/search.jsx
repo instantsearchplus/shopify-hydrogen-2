@@ -43,7 +43,8 @@ export async function loader({request, context}) {
     page: page,
     narrow: [],
     facetsRequired: 1,
-    query: searchTerm
+    query: searchTerm,
+    productsPerPage: 30
   });
 
   const transformed = transformToShopifyStructure(fastSimonSearchResults.items);

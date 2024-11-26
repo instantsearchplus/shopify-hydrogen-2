@@ -37,6 +37,7 @@ export async function loader({request, params, context}) {
     page: page,
     narrow: [],
     facetsRequired: 1,
+    productsPerPage: 30
   });
 
   if (!collection) {

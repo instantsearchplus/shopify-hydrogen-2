@@ -3,7 +3,7 @@ Build Search and Discovery experience with Fast Simon, a Shopify Plus Certified 
 
 [Getting started guide](https://instantsearchplus.zendesk.com/hc/en-us/categories/360000839131-Getting-Started-with-Fast-Simon)
 
-# Hydrogen template: Skeleton with Fast Simon Visual Similarity
+# Hydrogen template: Skeleton with Fast Simon Visual Similarity, Smart Collection and Search Results Page
 
 - Hydrogen is Shopify’s stack for headless commerce. Hydrogen is designed to dovetail with [Remix](https://remix.run/), Shopify’s full stack web framework. This template contains a **minimal setup** of components, queries and tooling to get started with Hydrogen.
 
@@ -68,7 +68,7 @@ npm install
 npm run dev
 ```
 
-## Usage
+## Visual Similarity Usage
 ### Adding Fast Simon fetcher function to the root loader
 - import `getVisualSimilarityProducts` from `@fast-simon/storefront-kit` into the product page root file
 - Invoke `getVisualSimilarityProducts` in your root loader function, passing the product id as a prop
@@ -174,5 +174,53 @@ Don't worry about the left icon, we are rotating the icon automatically.
                    products={visualSimilarityProducts}
                    imageAspectRatio={"2/3"}/>
 ```
+
+
+## Smart Collections Usage
+### Adding Fast Simon fetcher function to the root loader
+- import `getSmartCollection` from `@fast-simon/storefront-kit` into the product page root file
+- Invoke `getSmartCollection` in your root loader function, passing the product id as a prop
+- Pass down the results to the collection component.
+
+```js
+import {getSmartCollection, transformToShopifyStructure} from '@fast-simon/storefront-kit';
+
+export async function loader({request, params, context}) {
+  // ... other code
+  const {handle} = params;
+
+  if (!handle) {
+    return redirect('/collections');
+  }
+
+  const url = new URL(request.url);
+  const page = Number(url.searchParams.get("page")) || 1;
+
+  const collection = await getSmartCollection({
+    categoryURL: '/collections/' + handle,
+    UUID: '3eb6c1d2-152d-4e92-9c29-28eecc232373',
+    storeId: '55906173135',
+    page: page,
+    narrow: [],
+    facetsRequired: 1,
+    productsPerPage: 30
+  });
+
+  if (!collection) {
+    throw new Response(`Collection ${handle} not found`, {
+      status: 404,
+    });
+  }
+  const transformed = transformToShopifyStructure(collection.items);
+  collection.products = transformed.products;
+  collection.handle = collection.category_url.split('/')[1];
+  collection.title = collection.category_name;
+  collection.description = collection.category_description;
+  return json({collection});
+}
+
+```
+In the above example, we simply translated the Fast Simon results to the form of Shopify GraphQL using `transformToShopifyStructure` in order to use Shopify template components, but this step is optional and not required if you have your own components. 
+
 
 For any issues, questions, or suggestions, please contact our support team.
