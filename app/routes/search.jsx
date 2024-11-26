@@ -3,6 +3,7 @@ import {useLoaderData} from '@remix-run/react';
 import {getPaginationVariables} from '@shopify/hydrogen';
 
 import {SearchForm, SearchResults, NoSearchResults} from '~/components/Search';
+import {getSearchResults, transformToShopifyStructure} from '@fast-simon/storefront-kit';
 
 /**
  * @type {MetaFunction}
@@ -27,33 +28,40 @@ export async function loader({request, context}) {
     };
   }
 
-  const data = await context.storefront.query(SEARCH_QUERY, {
-    variables: {
-      query: searchTerm,
-      ...variables,
-    },
-  });
+  const page = Number(searchParams.get('page') || 1);
 
-  if (!data) {
-    throw new Error('No search data returned from Shopify API');
+  if (!searchTerm) {
+    return {
+      searchResults: {results: null, totalResults: 0},
+      searchTerm,
+    };
   }
 
-  const totalResults = Object.values(data).reduce((total, value) => {
-    return total + value.nodes.length;
-  }, 0);
+  const fastSimonSearchResults = await getSearchResults({
+    UUID: '3eb6c1d2-152d-4e92-9c29-28eecc232373',
+    storeId: '55906173135',
+    page: page,
+    narrow: [],
+    facetsRequired: 1,
+    query: searchTerm
+  });
+
+  const transformed = transformToShopifyStructure(fastSimonSearchResults.items);
 
   const searchResults = {
-    results: data,
-    totalResults,
+    results: transformed,
+    ...fastSimonSearchResults,
+    totalResults: fastSimonSearchResults?.total_results,
   };
 
   return defer({searchTerm, searchResults});
+
 }
 
 export default function SearchPage() {
   /** @type {LoaderReturnData} */
   const {searchTerm, searchResults} = useLoaderData();
-
+  //console.log({"searchResults.results": searchResults.results, "searchResults.totalResults": searchResults.totalResults, searchTerm});
   return (
     <div className="search">
       <h1>Search</h1>

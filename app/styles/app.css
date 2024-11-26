@@ -487,3 +487,112 @@ aside li {
 .account-logout {
   display: inline-block;
 }
+
+
+/*
+* --------------------------------------------------
+* fast simon grid
+* --------------------------------------------------
+*/
+/* Pagination */
+
+.fs-pagination-arrow-custom-icon {
+    height: 15px;
+    width: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-wrapper {
+    display: flex;
+    padding: 20px 5px;
+    font-size: 15px;
+    border-top: 1px solid #ccc;
+    margin: 10px 0 0;
+    align-items: center;
+    justify-content: center;
+    font-family: "Assistant", sans-serif;
+    font-weight: 600;
+}
+
+.page-number-item {
+    cursor: pointer;
+    transition: .2s all ease-in-out;
+    border: 1px solid transparent;
+    width: 35px;
+    height: 35px;
+    color: #666;
+    text-decoration: none;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-number-item:hover {
+    text-decoration: underline;
+    color: black;
+}
+
+.page-number-item-selected {
+    font-weight: bold;
+    color: white !important;
+    background: black;
+    cursor: default;
+    text-decoration: none !important;
+}
+
+.arrow-button {
+    text-decoration: none;
+    color: black;
+    display: flex;
+}
+
+.arrow-button-wrapper {
+    background-color: #f0f0f0;
+    border-radius: 50%;
+    margin-left: 5px;
+    margin-right: 5px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    min-height: 35px;
+    min-width: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.arrow-button-wrapper:hover .arrow-button {
+    text-decoration: underline;
+    color: black;
+}
+
+.center-pages-wrapper {
+    background-color: #f0f0f0;
+    display: flex;
+    border-radius: 20px;
+
+}
+
+.three-dots-item {
+    cursor: default !important;
+    text-decoration: none !important;
+    min-width: fit-content;
+}
+
+@media screen and (max-width: 420px) {
+    .pagination-wrapper {
+        transform: scale(0.95);
+    }
+
+    .page-number-item {
+        width: 32px;
+        height: 32px;
+    }
+
+    .arrow-button-wrapper {
+        min-width: 32px;
+        min-height: 32px;
+    }
+}

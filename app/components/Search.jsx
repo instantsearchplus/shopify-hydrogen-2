@@ -1,6 +1,7 @@
 import {Link, Form, useParams, useFetcher, useFetchers} from '@remix-run/react';
 import {Image, Money, Pagination} from '@shopify/hydrogen';
 import React, {useRef, useEffect} from 'react';
+import {useVariantUrl} from '~/utils';
 
 export const NO_PREDICTIVE_SEARCH_RESULTS = [
   {type: 'queries', items: []},
@@ -55,44 +56,24 @@ export function SearchForm({searchTerm}) {
  * @param {Pick<FetchSearchResultsReturn['searchResults'], 'results'>}
  */
 export function SearchResults({results}) {
+
   if (!results) {
     return null;
   }
   const keys = Object.keys(results);
+
   return (
     <div>
       {results &&
         keys.map((type) => {
           const resourceResults = results[type];
-
-          if (resourceResults.nodes[0]?.__typename === 'Page') {
-            const pageResults = resourceResults;
-            return resourceResults.nodes.length ? (
-              <SearchResultPageGrid key="pages" pages={pageResults} />
-            ) : null;
-          }
-
-          if (resourceResults.nodes[0]?.__typename === 'Product') {
             const productResults = resourceResults;
             return resourceResults.nodes.length ? (
-              <SearchResultsProductsGrid
+              <ProductsGrid
                 key="products"
-                products={productResults}
+                products={results.products.nodes}
               />
             ) : null;
-          }
-
-          if (resourceResults.nodes[0]?.__typename === 'Article') {
-            const articleResults = resourceResults;
-            return resourceResults.nodes.length ? (
-              <SearchResultArticleGrid
-                key="articles"
-                articles={articleResults}
-              />
-            ) : null;
-          }
-
-          return null;
         })}
     </div>
   );
@@ -159,7 +140,58 @@ function SearchResultPageGrid({pages}) {
     </div>
   );
 }
+/**
+ * @param {{products: ProductItemFragment[]}}
+ */
+function ProductsGrid({products}) {
+  return (
+    <div className="products-grid">
+      {products.map((product, index) => {
+        return (
+          <ProductItem
+            key={product.id}
+            product={product}
+            loading={index < 8 ? 'eager' : undefined}
+          />
+        );
+      })}
+    </div>
+  );
+}
 
+/**
+ * @param {{
+ *   product: ProductItemFragment;
+ *   loading?: 'eager' | 'lazy';
+ * }}
+ */
+function ProductItem({product, loading}) {
+  const variant = product.variants.nodes[0];
+  const variantUrl = useVariantUrl(product.handle, variant.selectedOptions).replace('?=', '');
+  return (
+    <Link
+      className="product-item"
+      key={product.id}
+      prefetch="intent"
+      to={variantUrl}
+    >
+      {product.featuredImage && (
+        <Image
+          alt={product.featuredImage.altText || product.title}
+          aspectRatio="0.8"
+          data={product.featuredImage}
+          loading={loading}
+          sizes="(min-width: 45em) 400px, 100vw"
+          height={'100'}
+        />
+      )}
+      <h4>{product.title}</h4>
+      <small>
+        <Money data={product.priceRange.minVariantPrice} />
+      </small>
+    </Link>
+  );
+}
 /**
  * @param {Pick<SearchQuery, 'articles'>}
  */

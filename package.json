@@ -12,7 +12,7 @@
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {
-    "@fast-simon/storefront-kit": "^0.0.3",
+    "@fast-simon/storefront-kit": "1.0.0-storefront-kit-sdk-beta-0.0.6",
     "@remix-run/react": "2.1.0",
     "@shopify/cli": "3.50.0",
     "@shopify/cli-hydrogen": "^6.0.0",
