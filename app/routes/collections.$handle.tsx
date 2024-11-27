@@ -1,10 +1,8 @@
 import {defer, redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {
-  getPaginationVariables,
   Image,
-  Money,
-  Analytics,
+  Money
 } from '@shopify/hydrogen';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
@@ -129,9 +127,6 @@ function ProductItem({
     >
       {product.featuredImage && (
         <Image
-          height={'200'}
-          width={'100'}
-          crop={'center'}
           alt={product.featuredImage.altText || product.title}
           aspectRatio="0.714"
           data={product.featuredImage}
