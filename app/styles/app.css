@@ -266,6 +266,7 @@ button.reset:hover:not(:has(> *)) {
     align-items: center;
     display: flex;
 }
+
 /*
 * --------------------------------------------------
 * components/Search
@@ -319,6 +320,14 @@ button.reset:hover:not(:has(> *)) {
     gap: 1rem;
 }
 
+.search-button {
+    margin-bottom: 0.5rem;
+    margin-top: 0.25rem;
+    padding: 0.5rem;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 4px;
+}
 /*
 * --------------------------------------------------
 * routes/__index
@@ -904,4 +913,27 @@ button.reset:hover:not(:has(> *)) {
         background-color: #00000094;
         z-index: 300;
     }
+}
+
+
+
+
+
+
+.fs-summary {
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-bottom: 1px solid #00000038;
+    padding-bottom: 6px;
+}
+.fs-total-results {
+    font-size: 14px;
+}
+
+.fs-products-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }

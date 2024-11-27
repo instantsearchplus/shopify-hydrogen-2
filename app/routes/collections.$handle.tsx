@@ -48,8 +48,8 @@ async function loadCriticalData({
       categoryURL: '/collections/' + handle,
       page,
       narrow: narrow,
-      facetsRequired: false,
-      productsPerPage: 30,
+      facetsRequired: true,
+      productsPerPage: 20,
       categoryID: undefined,
     },
   });
@@ -87,7 +87,13 @@ export default function Collection() {
       <p className="collection-description">{collection.description}</p>
       <div className={"results-filters-container"}>
         <Filters facets={facets} />
-        <ProductsGrid products={collection.products.nodes} />
+        <div className={'fs-products-summary'}>
+          <div className={'fs-summary'}>
+            <div className={'fs-page-name'}>{collection.category_name}</div>
+            <div className={'fs-total-results'}>{collection.total_results} Results</div>
+          </div>
+          <ProductsGrid products={collection.products.nodes} />
+        </div>
       </div>
       <br />
       <PaginationBar total={collection.total_p} />

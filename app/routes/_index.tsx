@@ -63,7 +63,7 @@ export default function Homepage() {
     <div className="home">
       <div className={"fast-simon-banner-container"}>
         <div className="fast-simon-banner-img-container">
-          <Image src={"https://demo-shopify.fastsimon.com/cdn/shop/files/Demo_Store2kx1k.png?v=1642619737"} aspectRatio={"2"} />
+          <Image src={"https://demo-shopify.fastsimon.com/cdn/shop/files/Demo_Store2kx1k.png?v=1642619737"} aspectRatio={"2"} sizes="100vw" loading={'eager'}/>
         </div>
         <div className="fast-simon-banner-content-container">
           <div className="fast-simon-banner-content">

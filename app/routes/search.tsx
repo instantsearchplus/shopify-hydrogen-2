@@ -1,7 +1,7 @@
 import {
   json,
   type LoaderFunctionArgs,
-  type ActionFunctionArgs,
+  type ActionFunctionArgs, defer,
 } from '@shopify/remix-oxygen';
 import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
 import {getPaginationVariables, Analytics, Image, Money} from '@shopify/hydrogen';
@@ -15,6 +15,8 @@ import {
 import {ProductItemFragment} from '../../storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {transformToShopifyStructure, PaginationBar} from '@fast-simon/storefront-kit';
+import {Narrow} from '@fast-simon/utilities';
+import {Filters} from '~/components/Filters';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Search`}];
@@ -31,19 +33,23 @@ export async function loader({request, context}: LoaderFunctionArgs) {
     console.error(error);
     return {term: '', result: null, error: error.message};
   });
+  const data = await searchPromise;
 
-  //{type: 'regular', term, error, result: {total, items}};
-  //console.log(Object.keys(awaited));
-  return json(await searchPromise);
+  if(data?.type === 'regular') {
+    const facets = {facets: data.result.getFacetsOnly ? data.result.getFacetsOnly() : data.result.facets};
+    return defer({...data, ...facets});
+  }
+  //const facets = {facets: criticalData.collection.getFacetsOnly ? criticalData.collection.getFacetsOnly() : criticalData.collection.facets};
+  return json(data);
 }
 
 /**
  * Renders the /search route
  */
 export default function SearchPage() {
-  const {type, term, result, error} = useLoaderData<typeof loader>();
+  const {type, term, result, error, facets} = useLoaderData<typeof loader>();
   if (type === 'predictive') return null;
-  //console.log(result.items);
+
   return (
     <div className="search">
       <h1>Search</h1>
@@ -58,7 +64,7 @@ export default function SearchPage() {
               type="search"
             />
             &nbsp;
-            <button type="submit">Search</button>
+            <button type="submit" className={'search-button'}>Search</button>
           </>
         )}
       </SearchForm>
@@ -67,7 +73,17 @@ export default function SearchPage() {
         <SearchResults.Empty />
       ) : (
         <>
-          <ProductsGrid products={result.items.products.nodes} />
+          <div className={"results-filters-container"}>
+            <Filters facets={facets} />
+            <div className={'fs-products-summary'}>
+              <div className={'fs-summary'}>
+                <div className={'fs-page-name'}>{result.term}</div>
+                <div className={'fs-total-results'}>{result.total} Results</div>
+              </div>
+              <ProductsGrid products={result.items.products.nodes} />
+            </div>
+          </div>
+
           <br />
           <PaginationBar total={result.total_p} />
         </>
@@ -266,24 +282,23 @@ async function regularSearch({
   LoaderFunctionArgs,
   'request' | 'context'
 >): Promise<RegularSearchReturn> {
-  const {storefront, fastSimon} = context;
+  const {fastSimon} = context;
   const url = new URL(request.url);
-  const variables = getPaginationVariables(request, {pageBy: 8});
   const term = String(url.searchParams.get('q') || '');
   const page = Number(url.searchParams.get('page') || 1);
 
-  // Search articles, pages, and products for the `q` term
-  const {errors, ...items} = await storefront.query(SEARCH_QUERY, {
-    variables: {...variables, term},
-  });
+  const narrowString = url.searchParams.get('filters');
+  const narrow = narrowString ? Narrow.toServerNarrow(Narrow.parseNarrow(narrowString || '')) : []
+
+
 
   const fastSimonSearchResults = await fastSimon.getSearchResults({
     props: {
       page: page,
-      narrow: [],
+      narrow: narrow,
       facetsRequired: 1,
       query: term,
-      productsPerPage: 30
+      productsPerPage: 20
     }
   });
 
@@ -291,14 +306,10 @@ async function regularSearch({
     throw new Error('No search data returned from FastSimon API');
   }
 
-  const error = errors
-    ? errors.map(({message}) => message).join(', ')
-    : undefined;
-
 
   const transformed = transformToShopifyStructure(fastSimonSearchResults.items);
   const facets = fastSimonSearchResults.getFacetsOnly ? fastSimonSearchResults.getFacetsOnly() : {};
-  return {type: 'regular', term, error, result: {total: fastSimonSearchResults.total_results, ...fastSimonSearchResults, ...facets, items: transformed}};
+  return {type: 'regular', term, error: undefined, result: {total: fastSimonSearchResults.total_results, ...fastSimonSearchResults, ...facets, items: transformed}};
 }
 
 /**
