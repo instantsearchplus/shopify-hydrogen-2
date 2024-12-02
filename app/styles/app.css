@@ -917,16 +917,59 @@ button.reset:hover:not(:has(> *)) {
 
 
 
+.fs-summary-and-sort-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #00000038;
+    padding-bottom: 6px;
+}
 
+.fs-sort-container {
 
+}
+
+.fs-sort-button {
+    border: 1px solid #00000038;
+    padding: 8px 8px;
+    font-size: 14px;
+    cursor: pointer;
+    width: 156px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fs-sort-btn-and-menu-container {
+
+}
+.sort-by-menu-container {
+    width: 100%;
+    position: relative;
+}
+
+.sort-by-menu {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    position: absolute;
+    font-size: 14px;
+    width: 100%;
+}
+
+.fs-sort-option {
+    padding: 4px 6px;
+    border: 1px solid #00000038;
+    border-top: unset;
+    background-color: white;
+    width: -webkit-fill-available;
+}
 
 .fs-summary {
     font-size: 16px;
     display: flex;
     flex-direction: column;
     gap: 2px;
-    border-bottom: 1px solid #00000038;
-    padding-bottom: 6px;
 }
 .fs-total-results {
     font-size: 14px;

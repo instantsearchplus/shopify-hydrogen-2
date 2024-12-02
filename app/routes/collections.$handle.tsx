@@ -1,14 +1,17 @@
 import {defer, redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {
+  CacheLong,
   Image,
-  Money
+  Money,
 } from '@shopify/hydrogen';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {transformToShopifyStructure, PaginationBar} from '@fast-simon/storefront-kit';
 import {Filters} from '~/components/Filters';
 import {Narrow} from '@fast-simon/utilities';
+import {ResultsSummary} from '~/components/ResultsSummary';
+import {SortByContainer} from '~/components/SortByContainer';
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
 };
@@ -19,8 +22,8 @@ export async function loader(args: LoaderFunctionArgs) {
   const criticalData = await loadCriticalData(args);
 
   const facets = {facets: criticalData.collection.getFacetsOnly ? criticalData.collection.getFacetsOnly() : criticalData.collection.facets};
-
-  return defer({...criticalData, ...facets});
+  const dashboardConfig = {dashboardConfig: args.context.fastSimon.getDashboardConfig({cacheStrategy: CacheLong()})};
+  return defer({...criticalData, ...facets, ...dashboardConfig});
 }
 
 /**
@@ -33,7 +36,7 @@ async function loadCriticalData({
                                   request,
                                 }: LoaderFunctionArgs) {
   const {handle} = params;
-  const {storefront, fastSimon} = context;
+  const {fastSimon} = context;
 
   if (!handle) {
     throw redirect('/collections');
@@ -42,6 +45,7 @@ async function loadCriticalData({
   const url = new URL(request.url);
   const page = Number(url.searchParams.get('page')) || 1;
   const narrowString = url.searchParams.get('filters');
+  const sortBy = url.searchParams.get('sort');
   const narrow = narrowString ? Narrow.toServerNarrow(Narrow.parseNarrow(narrowString || '')) : []
   const collection = await fastSimon.getSmartCollection({
     props: {
@@ -51,6 +55,7 @@ async function loadCriticalData({
       facetsRequired: true,
       productsPerPage: 20,
       categoryID: undefined,
+      sortBy: sortBy
     },
   });
 
@@ -79,7 +84,7 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 }
 
 export default function Collection() {
-  const {collection, facets} = useLoaderData<typeof loader>();
+  const {collection, facets, dashboardConfig} = useLoaderData<typeof loader>();
 
   return (
     <div className="collection">
@@ -88,9 +93,9 @@ export default function Collection() {
       <div className={"results-filters-container"}>
         <Filters facets={facets} />
         <div className={'fs-products-summary'}>
-          <div className={'fs-summary'}>
-            <div className={'fs-page-name'}>{collection.category_name}</div>
-            <div className={'fs-total-results'}>{collection.total_results} Results</div>
+          <div className={'fs-summary-and-sort-container'}>
+            <ResultsSummary numberOfResults={collection.total_results} pageTitle={collection.category_name}/>
+            <SortByContainer serverSort={collection.sort_by} dashboardConfig={dashboardConfig}/>
           </div>
           <ProductsGrid products={collection.products.nodes} />
         </div>

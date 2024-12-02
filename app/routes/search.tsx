@@ -4,7 +4,7 @@ import {
   type ActionFunctionArgs, defer,
 } from '@shopify/remix-oxygen';
 import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
-import {getPaginationVariables, Analytics, Image, Money} from '@shopify/hydrogen';
+import {Analytics, CacheLong, Image, Money} from '@shopify/hydrogen';
 import {SearchForm} from '~/components/SearchForm';
 import {SearchResults} from '~/components/SearchResults';
 import {
@@ -17,6 +17,8 @@ import {useVariantUrl} from '~/lib/variants';
 import {transformToShopifyStructure, PaginationBar} from '@fast-simon/storefront-kit';
 import {Narrow} from '@fast-simon/utilities';
 import {Filters} from '~/components/Filters';
+import {ResultsSummary} from '~/components/ResultsSummary';
+import {SortByContainer} from '~/components/SortByContainer';
 
 export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Search`}];
@@ -37,9 +39,9 @@ export async function loader({request, context}: LoaderFunctionArgs) {
 
   if(data?.type === 'regular') {
     const facets = {facets: data.result.getFacetsOnly ? data.result.getFacetsOnly() : data.result.facets};
-    return defer({...data, ...facets});
+    const dashboardConfig = {dashboardConfig: context.fastSimon.getDashboardConfig({cacheStrategy: CacheLong()})};
+    return defer({...data, ...facets, ...dashboardConfig});
   }
-  //const facets = {facets: criticalData.collection.getFacetsOnly ? criticalData.collection.getFacetsOnly() : criticalData.collection.facets};
   return json(data);
 }
 
@@ -47,7 +49,7 @@ export async function loader({request, context}: LoaderFunctionArgs) {
  * Renders the /search route
  */
 export default function SearchPage() {
-  const {type, term, result, error, facets} = useLoaderData<typeof loader>();
+  const {type, term, result, error, facets, dashboardConfig} = useLoaderData<typeof loader>();
   if (type === 'predictive') return null;
 
   return (
@@ -76,9 +78,9 @@ export default function SearchPage() {
           <div className={"results-filters-container"}>
             <Filters facets={facets} />
             <div className={'fs-products-summary'}>
-              <div className={'fs-summary'}>
-                <div className={'fs-page-name'}>{result.term}</div>
-                <div className={'fs-total-results'}>{result.total} Results</div>
+              <div className={'fs-summary-and-sort-container'}>
+                <ResultsSummary numberOfResults={result.term} pageTitle={result.total}/>
+                <SortByContainer serverSort={result.sort_by} dashboardConfig={dashboardConfig}/>
               </div>
               <ProductsGrid products={result.items.products.nodes} />
             </div>
@@ -286,11 +288,9 @@ async function regularSearch({
   const url = new URL(request.url);
   const term = String(url.searchParams.get('q') || '');
   const page = Number(url.searchParams.get('page') || 1);
-
+  const sortBy = url.searchParams.get('sort');
   const narrowString = url.searchParams.get('filters');
   const narrow = narrowString ? Narrow.toServerNarrow(Narrow.parseNarrow(narrowString || '')) : []
-
-
 
   const fastSimonSearchResults = await fastSimon.getSearchResults({
     props: {
@@ -298,7 +298,8 @@ async function regularSearch({
       narrow: narrow,
       facetsRequired: 1,
       query: term,
-      productsPerPage: 20
+      productsPerPage: 20,
+      sortBy: sortBy
     }
   });
 
