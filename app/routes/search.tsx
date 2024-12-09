@@ -1,27 +1,19 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs, defer,
-} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction, Link} from '@remix-run/react';
+import {type ActionFunctionArgs, defer, json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {Link, type MetaFunction, useLoaderData} from '@remix-run/react';
 import {Analytics, CacheLong, Image, Money} from '@shopify/hydrogen';
 import {SearchForm} from '~/components/SearchForm';
 import {SearchResults} from '~/components/SearchResults';
-import {
-  type RegularSearchReturn,
-  type PredictiveSearchReturn,
-  getEmptyPredictiveSearchResult,
-} from '~/lib/search';
+import {getEmptyPredictiveSearchResult, type PredictiveSearchReturn, type RegularSearchReturn} from '~/lib/search';
 import {ProductItemFragment} from '../../storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
-import {transformToShopifyStructure, PaginationBar} from '@fast-simon/storefront-kit';
+import {PaginationBar, transformToShopifyStructure} from '@fast-simon/storefront-kit';
 import {Narrow} from '@fast-simon/utilities';
 import {Filters} from '~/components/Filters';
 import {ResultsSummary} from '~/components/ResultsSummary';
 import {SortByContainer} from '~/components/SortByContainer';
 
 export const meta: MetaFunction = () => {
-  return [{title: `Hydrogen | Search`}];
+  return [{title: `Fast Simon For Shopify Hydrogen | Search Results`}];
 };
 
 export async function loader({request, context}: LoaderFunctionArgs) {
@@ -43,6 +35,18 @@ export async function loader({request, context}: LoaderFunctionArgs) {
     return defer({...data, ...facets, ...dashboardConfig});
   }
   return json(data);
+}
+
+async function getFastSimonAutocompleteResults({request, context}: LoaderFunctionArgs) {
+  const {fastSimon} = context;
+  const url = new URL(request.url);
+  const term = String(url.searchParams.get('q') || '').trim();
+
+  return await fastSimon.getAutocompleteResults({
+    props: {
+      query: term
+    }
+  });
 }
 
 /**
@@ -307,7 +311,6 @@ async function regularSearch({
     throw new Error('No search data returned from FastSimon API');
   }
 
-
   const transformed = transformToShopifyStructure(fastSimonSearchResults.items);
   const facets = fastSimonSearchResults.getFacetsOnly ? fastSimonSearchResults.getFacetsOnly() : {};
   return {type: 'regular', term, error: undefined, result: {total: fastSimonSearchResults.total_results, ...fastSimonSearchResults, ...facets, items: transformed}};
@@ -446,36 +449,24 @@ async function predictiveSearch({
   ActionFunctionArgs,
   'request' | 'context'
 >): Promise<PredictiveSearchReturn> {
-  const {storefront} = context;
   const url = new URL(request.url);
   const term = String(url.searchParams.get('q') || '').trim();
-  const limit = Number(url.searchParams.get('limit') || 10);
+
   const type = 'predictive';
 
   if (!term) return {type, term, result: getEmptyPredictiveSearchResult()};
 
-  // Predictively search articles, collections, pages, products, and queries (suggestions)
-  const {predictiveSearch: items, errors} = await storefront.query(
-    PREDICTIVE_SEARCH_QUERY,
-    {
-      variables: {
-        // customize search options as needed
-        limit,
-        limitScope: 'EACH',
-        term,
-      },
-    },
-  );
-
-  if (errors) {
-    throw new Error(
-      `Shopify API errors: ${errors.map(({message}) => message).join(', ')}`,
-    );
-  }
+  const {items} = await getFastSimonAutocompleteResults({request, context});
 
   if (!items) {
     throw new Error('No predictive search data returned from Shopify API');
   }
+
+  items.products = items.products.map(item => ({
+    ...item,
+    t: (item?.t2 || item?.t)?.replace('_large.', '.'),
+    t2: item.t
+  }))
 
   const total = Object.values(items).reduce(
     (acc, item) => acc + item.length,

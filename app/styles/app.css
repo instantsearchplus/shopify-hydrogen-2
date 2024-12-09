@@ -838,10 +838,12 @@ button.reset:hover:not(:has(> *)) {
         display: grid;
         grid-gap: 1rem;
         margin-bottom: 2rem;
-        grid-template-columns: repeat(2, calc(50% - 0.8rem));
+        grid-template-columns: repeat(2, calc(50% - 8px));
     }
     .results-filters-container {
         display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .results-filters-container .fs-filters {
         position: absolute;

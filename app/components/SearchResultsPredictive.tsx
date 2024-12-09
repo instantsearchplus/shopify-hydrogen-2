@@ -86,7 +86,7 @@ function SearchResultsPredictiveArticles({
   closeSearch,
 }: PartialPredictiveSearchResult<'articles'>) {
   if (!articles.length) return null;
-
+  console.log(articles);
   return (
     <div className="predictive-search-result" key="articles">
       <h5>Articles</h5>
@@ -126,6 +126,7 @@ function SearchResultsPredictiveCollections({
   collections,
   closeSearch,
 }: PartialPredictiveSearchResult<'collections'>) {
+
   if (!collections.length) return null;
 
   return (
@@ -133,25 +134,20 @@ function SearchResultsPredictiveCollections({
       <h5>Collections</h5>
       <ul>
         {collections.map((collection) => {
-          const colllectionUrl = urlWithTrackingParams({
-            baseUrl: `/collections/${collection.handle}`,
-            trackingParams: collection.trackingParameters,
-            term: term.current,
-          });
 
           return (
             <li className="predictive-search-result-item" key={collection.id}>
-              <Link onClick={closeSearch} to={colllectionUrl}>
-                {collection.image?.url && (
+              <Link onClick={closeSearch} to={collection.u}>
+                {collection.t && (
                   <Image
-                    alt={collection.image.altText ?? ''}
-                    src={collection.image.url}
+                    alt={'collection image' ?? ''}
+                    src={collection.t}
                     width={50}
                     height={50}
                   />
                 )}
                 <div>
-                  <span>{collection.title}</span>
+                  <span>{collection.l}</span>
                 </div>
               </Link>
             </li>
@@ -201,37 +197,22 @@ function SearchResultsPredictiveProducts({
   closeSearch,
 }: PartialPredictiveSearchResult<'products'>) {
   if (!products.length) return null;
-
   return (
     <div className="predictive-search-result" key="products">
       <h5>Products</h5>
       <ul>
         {products.map((product) => {
-          const productUrl = urlWithTrackingParams({
-            baseUrl: `/products/${product.handle}`,
-            trackingParams: product.trackingParameters,
-            term: term.current,
-          });
-
-          const image = product?.variants?.nodes?.[0].image;
           return (
             <li className="predictive-search-result-item" key={product.id}>
-              <Link to={productUrl} onClick={closeSearch}>
-                {image && (
+              <Link to={product.u} onClick={closeSearch}>
                   <Image
-                    alt={image.altText ?? ''}
-                    src={image.url}
+                    alt={'autocomplete product image'}
+                    src={product.t}
                     width={50}
                     height={50}
                   />
-                )}
                 <div>
-                  <p>{product.title}</p>
-                  <small>
-                    {product?.variants?.nodes?.[0].price && (
-                      <Money data={product.variants.nodes[0].price} />
-                    )}
-                  </small>
+                  <p>{product.l}</p>
                 </div>
               </Link>
             </li>
@@ -248,6 +229,7 @@ function SearchResultsPredictiveQueries({
 }: PartialPredictiveSearchResult<'queries', never> & {
   queriesDatalistId: string;
 }) {
+
   if (!queries.length) return null;
 
   return (
@@ -255,7 +237,7 @@ function SearchResultsPredictiveQueries({
       {queries.map((suggestion) => {
         if (!suggestion) return null;
 
-        return <option key={suggestion.text} value={suggestion.text} />;
+        return <option key={suggestion} value={suggestion} />;
       })}
     </datalist>
   );

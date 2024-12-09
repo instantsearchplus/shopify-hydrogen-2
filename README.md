@@ -16,7 +16,10 @@ Build Search and Discovery experience with Fast Simon, a Shopify Plus Certified 
 
 ## What's included
 
-- Fast Simon Visual Similarity integration
+- Fast Simon Visual Similarity 
+- Fast Simon Smart Collections
+- Fast Simon Instant Search Autocomplete
+- Fast Simon Search Results Page
 - Remix
 - Hydrogen
 - Oxygen
@@ -33,7 +36,7 @@ React NPM package to support Fast Simon tools in Shopify Hydrogen Projects.
 
 # What is Fast Simon for Shopify Hydrogen?
 Fast Simon Shopify Hydrogen is a React library to be used in Shopify Hydrogen apps.
-By installing the library on your Hydrogen-based Shopify storefront, you will be able to render Fast Simon components in your app.
+By installing the library on your Hydrogen-based Shopify storefront, you will be able to fetch Fast Simon data and render Fast Simon components in your app.
 
 # Installation Guide
 This document will guide you to:
@@ -52,7 +55,7 @@ This document will guide you to:
 
 **Next Steps:**
 * Go to Fast Simon Dashboard -> Upsell & Cross-sell -> Advanced Configuration -> Turn the Look-a-like Visually Similar Recommendations switch on.
-
+* Make sure that Collections, Search Results Page, and Autocomplete are enabled in Fast Simon Dashboard.
 
 ## Installation
 **To install the package into your project, run:**
@@ -68,24 +71,47 @@ npm install
 npm run dev
 ```
 
+## Fast Simon Context API
+#### The following simple example shows how to add Fast Simon API to the Remix context, and simply query your data from any route.
+- Go to `/app/lib/context.ts` directory in your Hydrogen project
+- import `createFastSimonClient` from `@fast-simon/storefront-kit`.
+- Invoke createFastSimonClient and return it as following:
+```js
+export async function createAppLoadContext(
+  request: Request,
+  env: Env,
+  executionContext: ExecutionContext
+) {
+  // ... Existing context creation code here...
+
+  // Create the Fast Simon API Client
+  const fastSimon = createFastSimonClient({cache, waitUntil, request, uuid: '{{fast_simon_uuid}}', storeID: '{{fast_simon_store_id}}'});
+
+  return {
+    ...hydrogenContext,
+    fastSimon,
+  };
+}
+```
+- You can now query Fast Simon API from any loader function, on any route, using the same caching utilities that Hydrogen uses to query Shopify's Storefront API.
+
+
 ## Visual Similarity Usage
 ### Adding Fast Simon fetcher function to the root loader
-- import `getVisualSimilarityProducts` from `@fast-simon/storefront-kit` into the product page root file
 - Invoke `getVisualSimilarityProducts` in your root loader function, passing the product id as a prop
 - Pass down the result to the product page component, you can either await to the promise to resolved (which could have a negative performance impact) or just pass the promise down as a stream.
 
-```js
-import {getVisualSimilarityProducts} from '@fast-simon/storefront-kit';
-
-export async function loader({params, request, context}: LoaderFunctionArgs) {
-  // ... other code
-  const visualSimilarityProducts = getVisualSimilarityProducts({
-    UUID: 'Your store UUID here, you can find it in the Fast Simon dashboard',
-    productId: product.id,
-    storeId: 'Your store ID here, you can find it in the Fast Simon dashboard',
+```ts
+export async function loader(args: LoaderFunctionArgs) {
+  /* ... Existing product data fetch code here... */
+  const visualSimilarityProducts = args.context.fastSimon.getVisualSimilarityProducts({
+    props: {
+      productId: productId
+    },
+    cacheStrategy: CacheLong()
   });
-  return defer({otherparam, visualSimilarityProducts});
-
+  return defer({...someData, visualSimilarityProducts});
+}
 ```
 
 ### Using Fast Simon components
@@ -177,14 +203,12 @@ Don't worry about the left icon, we are rotating the icon automatically.
 
 
 ## Smart Collections Usage
-### Adding Fast Simon fetcher function to the root loader
-- import `getSmartCollection` from `@fast-simon/storefront-kit` into the collection handle file
-- Invoke `getSmartCollection` in your root loader function, passing category URL, uuid and store id as props
-- Pass down the results to the collection component.
+### Adding Fast Simon getSmartCollection function to the root loader
+- Go to file `routes/collections.$handle.tsx`
+- Invoke `getSmartCollection` in your root loader function, passing category URL, page number, sort by and narrow
+- Pass down the results to the Collection component.
 
 ```js
-import {getSmartCollection, transformToShopifyStructure} from '@fast-simon/storefront-kit';
-
 export async function loader({request, params, context}) {
   // ... other code
   const {handle} = params;
@@ -195,15 +219,20 @@ export async function loader({request, params, context}) {
 
   const url = new URL(request.url);
   const page = Number(url.searchParams.get("page")) || 1;
-
-  const collection = await getSmartCollection({
-    categoryURL: '/collections/' + handle,
-    UUID: '3eb6c1d2-152d-4e92-9c29-28eecc232373',
-    storeId: '55906173135',
-    page: page,
-    narrow: [],
-    facetsRequired: 1,
-    productsPerPage: 30
+  const narrowString = url.searchParams.get('filters');
+  const sortBy = url.searchParams.get('sort');
+  const narrow = narrowString ? Narrow.toServerNarrow(Narrow.parseNarrow(narrowString || '')) : [];
+  
+  const collection = await fastSimon.getSmartCollection({
+    props: {
+      categoryURL: '/collections/' + handle,
+      page,
+      narrow: narrow,
+      facetsRequired: true,
+      productsPerPage: 20,
+      categoryID: undefined,
+      sortBy: sortBy
+    },
   });
 
   if (!collection) {
@@ -216,11 +245,154 @@ export async function loader({request, params, context}) {
   collection.handle = collection.category_url.split('/')[1];
   collection.title = collection.category_name;
   collection.description = collection.category_description;
-  return json({collection});
+  const facets = {facets: criticalData.collection.getFacetsOnly ? criticalData.collection.getFacetsOnly() : criticalData.collection.facets};
+  return defer({collection, ...facets});
 }
 
 ```
 In the above example, we simply translated the Fast Simon results to the form of Shopify GraphQL using `transformToShopifyStructure` in order to use Shopify template components, but this step is optional and not required if you have your own components. 
 
+For facets, there are two scenarios in order to optimize speed:
+1. Facets are ready within the collection response - in this case we simply assign the facets value and pass it down with the rest of the data
+2. Facets are not ready - in this case, the collection response contains a callback function called getFacetsOnly. This function returns a Promise and we passing this promise down to the stream. 
+
+For deeper insight on how to render the streamed facets, please refer to the `Filters` component in this sample site.
+
+
+## Search Results Page Usage
+### Adding Fast Simon fetcher function to the root loader
+- Go to file `routes/search.tsx`
+- Invoke `getSearchResults` in your root loader function, passing the search query, page number, sort by and narrow
+- Pass down the results to the search component.
+
+```js
+async function regularSearch({
+                               request,
+                               context,
+                             }: Pick<
+  LoaderFunctionArgs,
+  'request' | 'context'
+>): Promise<RegularSearchReturn> {
+  const {fastSimon} = context;
+  const url = new URL(request.url);
+  const term = String(url.searchParams.get('q') || '');
+  const page = Number(url.searchParams.get('page') || 1);
+  const sortBy = url.searchParams.get('sort');
+  const narrowString = url.searchParams.get('filters');
+  const narrow = narrowString ? Narrow.toServerNarrow(Narrow.parseNarrow(narrowString || '')) : []
+
+  const fastSimonSearchResults = await fastSimon.getSearchResults({
+    props: {
+      page: page,
+      narrow: narrow,
+      facetsRequired: 1,
+      query: term,
+      productsPerPage: 20,
+      sortBy: sortBy
+    }
+  });
+
+  if (!fastSimonSearchResults) {
+    throw new Error('No search data returned from FastSimon API');
+  }
+  
+  const transformed = transformToShopifyStructure(fastSimonSearchResults.items);
+  const facets = fastSimonSearchResults.getFacetsOnly ? fastSimonSearchResults.getFacetsOnly() : {};
+  return {type: 'regular', term, error: undefined, result: {total: fastSimonSearchResults.total_results, ...fastSimonSearchResults, ...facets, items: transformed}};
+}
+
+export async function loader({request, params, context}) {
+  const url = new URL(request.url);
+  const searchPromise = regularSearch({request, context});
+  searchPromise.catch((error: Error) => {
+    console.error(error);
+    return {term: '', result: null, error: error.message};
+  });
+  const data = await searchPromise;
+  const facets = {facets: data.result.getFacetsOnly ? data.result.getFacetsOnly() : data.result.facets};
+  return defer({...data, ...facets});
+}
+```
+In the above example, we simply translated the Fast Simon results to the form of Shopify GraphQL using `transformToShopifyStructure` in order to use Shopify template components, but this step is optional and not required if you have your own components. 
+
+For facets, there are two scenarios in order to optimize speed:
+1. Facets are ready within the search response - in this case we simply assign the facets value and pass it down with the the rest of the data
+2. Facets are not ready - in this case, the search response contains a callback function called getFacetsOnly. This function returns a Promise and we passing this promise down to the stream. 
+
+For more details on how to render the streamed facets, please refer to the `Filters` component in this sample site.
+
+
+## Autocomplete Usage
+### Adding getFastSimonAutocompleteResults function to the root loader
+- Go to file `routes/search.tsx`
+- Invoke `getAutocompleteResults` in your root loader function, passing the search query
+- Pass down the results to the predictive search component.
+
+```js
+async function getFastSimonAutocompleteResults({request, context}: LoaderFunctionArgs) {
+  const {fastSimon} = context;
+  const url = new URL(request.url);
+  const term = String(url.searchParams.get('q') || '').trim();
+
+  return await fastSimon.getAutocompleteResults({
+    props: {
+      query: term
+    }
+  });
+}
+
+async function predictiveSearch({
+                                  request,
+                                  context,
+                                }: Pick<
+  ActionFunctionArgs,
+  'request' | 'context'
+>): Promise<PredictiveSearchReturn> {
+  const url = new URL(request.url);
+  const term = String(url.searchParams.get('q') || '').trim();
+
+  const type = 'predictive';
+
+  if (!term) return {type, term, result: getEmptyPredictiveSearchResult()};
+
+  const {items} = await getFastSimonAutocompleteResults({request, context});
+
+  if (!items) {
+    throw new Error('No predictive search data returned from Shopify API');
+  }
+
+  const total = Object.values(items).reduce(
+    (acc, item) => acc + item.length,
+    0,
+  );
+
+  return {type, term, result: {items, total}};
+}
+
+export async function loader({request, context}: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const isPredictive = url.searchParams.has('predictive');
+  const searchPromise = isPredictive
+    ? predictiveSearch({request, context})
+    : regularSearch({request, context});
+
+  searchPromise.catch((error: Error) => {
+    console.error(error);
+    return {term: '', result: null, error: error.message};
+  });
+  const data = await searchPromise;
+
+  if(data?.type === 'regular') {
+    const facets = {facets: data.result.getFacetsOnly ? data.result.getFacetsOnly() : data.result.facets};
+    const dashboardConfig = {dashboardConfig: context.fastSimon.getDashboardConfig({cacheStrategy: CacheLong()})};
+    return defer({...data, ...facets, ...dashboardConfig});
+  }
+  return json(data);
+}
+```
+
+In the above example we wrapped up the regular search and autocomplete together as Shopify does in the original template.
+
+For more detailed examples, how to use the data and render it, please refer to this project components. 
 
 For any issues, questions, or suggestions, please contact our support team.

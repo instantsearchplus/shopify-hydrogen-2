@@ -129,6 +129,7 @@ function ProductItem({
 }) {
   const variant = product.variants.nodes[0];
   const variantUrl = useVariantUrl(product.handle, variant.selectedOptions).replace('?=', '');
+
   return (
     <Link
       className="product-item"
@@ -142,7 +143,7 @@ function ProductItem({
           aspectRatio="0.714"
           data={product.featuredImage}
           loading={loading}
-          sizes="(min-width: 45em) 400px, 100vw"
+          sizes="(min-width: 45em) 400px, calc(50vw - 2rem)"
         />
       )}
       <h4>{product.title}</h4>

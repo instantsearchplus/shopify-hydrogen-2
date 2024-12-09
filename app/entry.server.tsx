@@ -38,8 +38,8 @@ export default async function handleRequest(
   }
 
   responseHeaders.set('Content-Type', 'text/html');
-  responseHeaders.set('Content-Security-Policy', header + `; img-src 'self' https://cdn.shopify.com https://shopify.com https://demo-shopify.fastsimon.com;`);
-
+  responseHeaders.set('Content-Security-Policy', header + `; img-src 'self' https://cdn.shopify.com https://shopify.com https://demo-shopify.fastsimon.com https://assets.instantsearchplus.com http://magento.instantsearchplus.com;`);
+  responseHeaders.set('Oxygen-Cache-Control', 'public, max-age=3600, stale-while-revalidate=600');
   return new Response(body, {
     headers: responseHeaders,
     status: responseStatusCode,
