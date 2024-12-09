@@ -23,7 +23,7 @@
     "isbot": "^3.8.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@fast-simon/storefront-kit": "1.0.0-storefront-kit-sdk-beta-0.0.32",
+    "@fast-simon/storefront-kit": "1.0.0",
     "@fast-simon/utilities": "1.0.7"
   },
   "devDependencies": {

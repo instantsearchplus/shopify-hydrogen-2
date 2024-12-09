@@ -61,6 +61,7 @@ This document will guide you to:
 **To install the package into your project, run:**
 ```bash
 npm install @fast-simon/storefront-kit
+npm install @fast-simon/utilities
 ```
 
 ## Local development
