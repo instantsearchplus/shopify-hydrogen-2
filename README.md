@@ -7,9 +7,9 @@ Build Search and Discovery experience with Fast Simon, a Shopify Plus Certified 
 
 - Hydrogen is Shopify’s stack for headless commerce. Hydrogen is designed to dovetail with [Remix](https://remix.run/), Shopify’s full stack web framework. This template contains a **minimal setup** of components, queries and tooling to get started with Hydrogen.
 
-- This demo store is a clone of the demo-store template provided by Shopify with examples of how to integrate the Fast Simon Visual Similarity.
+- This demo store is a clone of the demo-store template provided by Shopify with examples of how to integrate Fast Simon Search and Discovery.
 
-- [Check out the Visual Similarity feature in a Shopify Hydrogen demo store](https://shopify-hydrogen-2-b10004a9e68ce7a318e7.o2.myshopify.dev/products/mens-muscle-top)
+- [Check out Fast Simon Shopify Hydrogen demo store](https://demo-shopify-hydrogen.fastsimon.com)
 
 [Check out Hydrogen docs](https://shopify.dev/custom-storefronts/hydrogen)
 [Get familiar with Remix](https://remix.run/docs/en/v1)
