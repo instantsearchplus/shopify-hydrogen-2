@@ -94,25 +94,35 @@ export async function createAppLoadContext(
   };
 }
 ```
+- Note: replace fast_simon_uuid and fast_simon_store_id with your own UUID and StoreId. It can be found at the dashboard->settings.
 - You can now query Fast Simon API from any loader function, on any route, using the same caching utilities that Hydrogen uses to query Shopify's Storefront API.
 
 
 ## Visual Similarity Usage
 ### Adding Fast Simon fetcher function to the root loader
-- Invoke `getVisualSimilarityProducts` in your root loader function, passing the product id as a prop
+- Go to file that you want to place the Widget on.
+- Invoke `getVisualSimilarityProducts` in your root loader function (at the same file), passing the product id as a prop
 - Pass down the result to the product page component, you can either await to the promise to resolved (which could have a negative performance impact) or just pass the promise down as a stream.
 
 ```ts
 export async function loader(args: LoaderFunctionArgs) {
-  /* ... Existing product data fetch code here... */
-  const visualSimilarityProducts = args.context.fastSimon.getVisualSimilarityProducts({
-    props: {
-      productId: productId
-    },
-    cacheStrategy: CacheLong()
-  });
-  return defer({...someData, visualSimilarityProducts});
+ // Start fetching non-critical data without blocking time to first byte
+ const deferredData = loadDeferredData(args);
+
+ // Await the critical data required to render initial state of the page
+ const criticalData = await loadCriticalData(args);
+
+ const visualSimilarityProducts =
+   args.context.fastSimon.getVisualSimilarityProducts({
+     props: {
+       productId: criticalData.product.id,
+     },
+     cacheStrategy: CacheLong(),
+   });
+
+ return defer({...deferredData, ...criticalData, visualSimilarityProducts});
 }
+
 ```
 
 ### Using Fast Simon components
@@ -160,45 +170,28 @@ https://docs.fastsimon.com/api#operation/productRecommendations
 ### `FastSimonWidget` component
 You can customize the FastSimonWidget component with various props to match your store's design and layout requirements.
 
-`renderProduct` - a function that receives a product object and returns a React element. This allows you to customize the product card that is rendered for each product in the widget. For example:
+- `renderProduct` - a function that receives a product object and returns a React element. This allows you to customize the product card that is rendered for each product in the widget. For example:
+
+- `title` - The title of the widget, for example `Similar Products` or `You may also like`
+
+- `breakpoints` - An object of breakpoints to control the number of products displayed in each device. 
+
+- `carouselGap` - The gap between products in the carousel in pixel, default value is 16. 
+
+- `RightArrowIcon` - A JSX element to use as the right arrow icon in the carousel. Don't worry about the left icon, we are rotating the icon automatically.
+
+- `imageAspectRatio` - The aspect ratio of the product image, default value is "2/3".
 ```js
   <FastSimonWidget title={'Similar Products'}
                    products={visualSimilarityProducts}
-                   renderProduct={(product, pos) => <MyProductCard key={product.id} product={product} />}/>
-```
-
-
-`title` - The title of the widget, for example `Similar Products` or `You may also like`
-`breakpoints` - An object of breakpoints to control the number of products displayed in each device. For example:
-```js
-  <FastSimonWidget title={'Similar Products'}
-                   products={visualSimilarityProducts}
+                   renderProduct={(product, pos) => <MyProductCard key={product.id} product={product} />}
                    breakpoints={{
                      mobile: 2,
                      tablet: 3,
                      desktop: 4,
-                   }}/>
-```
-
-`carouselGap` - The gap between products in the carousel in pixel, default value is 16. For example:
-```js
-  <FastSimonWidget title={'Similar Products'}
-                   products={visualSimilarityProducts}
-                   carouselGap={16}/>
-```
-
-`RightArrowIcon` - A JSX element to use as the right arrow icon in the carousel. For example:
-```js
-  <FastSimonWidget title={'Similar Products'}
-                   products={visualSimilarityProducts}
-                   RightArrowIcon={<MyRightArrowIcon/>}/>
-```
-Don't worry about the left icon, we are rotating the icon automatically.
-
-`imageAspectRatio` - The aspect ratio of the product image, default value is "2/3". For example:
-```js
-  <FastSimonWidget title={'Similar Products'}
-                   products={visualSimilarityProducts}
+                   }}
+                   carouselGap={16}
+                   RightArrowIcon={<MyRightArrowIcon/>}
                    imageAspectRatio={"2/3"}/>
 ```
 
@@ -206,50 +199,76 @@ Don't worry about the left icon, we are rotating the icon automatically.
 ## Smart Collections Usage
 ### Adding Fast Simon getSmartCollection function to the root loader
 - Go to file `routes/collections.$handle.tsx`
-- Invoke `getSmartCollection` in your root loader function, passing category URL, page number, sort by and narrow
+- Invoke `getSmartCollection` in your root loader function (at the same file), passing category URL, page number, sort by and narrow
 - Pass down the results to the Collection component.
 
 ```js
-export async function loader({request, params, context}) {
-  // ... other code
-  const {handle} = params;
+export async function loader(args: LoaderFunctionArgs) {
+ // Start fetching non-critical data without blocking time to first byte
+ const deferredData = loadDeferredData(args);
 
-  if (!handle) {
-    return redirect('/collections');
-  }
+ // Await the critical data required to render initial state of the page
+ const criticalData = await loadCriticalData(args);
 
-  const url = new URL(request.url);
-  const page = Number(url.searchParams.get("page")) || 1;
-  const narrowString = url.searchParams.get('filters');
-  const sortBy = url.searchParams.get('sort');
-  const narrow = narrowString ? Narrow.toServerNarrow(Narrow.parseNarrow(narrowString || '')) : [];
-  
-  const collection = await fastSimon.getSmartCollection({
-    props: {
-      categoryURL: '/collections/' + handle,
-      page,
-      narrow: narrow,
-      facetsRequired: true,
-      productsPerPage: 20,
-      categoryID: undefined,
-      sortBy: sortBy
-    },
-  });
-
-  if (!collection) {
-    throw new Response(`Collection ${handle} not found`, {
-      status: 404,
-    });
-  }
-  const transformed = transformToShopifyStructure(collection.items);
-  collection.products = transformed.products;
-  collection.handle = collection.category_url.split('/')[1];
-  collection.title = collection.category_name;
-  collection.description = collection.category_description;
-  const facets = {facets: criticalData.collection.getFacetsOnly ? criticalData.collection.getFacetsOnly() : criticalData.collection.facets};
-  return defer({collection, ...facets});
+ const facets = {
+   facets: criticalData.collection.getFacetsOnly
+     ? criticalData.collection.getFacetsOnly()
+     : criticalData.collection.facets,
+ };
+ const dashboardConfig = {
+   dashboardConfig: args.context.fastSimon.getDashboardConfig({
+     cacheStrategy: CacheLong(),
+   }),
+ };
+ return defer({...criticalData, ...facets, ...dashboardConfig});
 }
 
+
+async function loadCriticalData({
+ context,
+ params,
+ request,
+}: LoaderFunctionArgs) {
+ const {handle} = params;
+ const {fastSimon} = context;
+
+ if (!handle) {
+   throw redirect('/collections');
+ }
+
+ const url = new URL(request.url);
+ const page = Number(url.searchParams.get('page')) || 1;
+ const narrowString = url.searchParams.get('filters');
+ const sortBy = url.searchParams.get('sort');
+ const narrow = narrowString
+   ? Narrow.toServerNarrow(Narrow.parseNarrow(narrowString || ''))
+   : [];
+ const collection = await fastSimon.getSmartCollection({
+   props: {
+     categoryURL: '/collections/' + handle,
+     page,
+     narrow,
+     facetsRequired: true,
+     productsPerPage: 20,
+     categoryID: undefined,
+     sortBy,
+   },
+ });
+
+ if (!collection) {
+   throw new Response(`Collection ${handle} not found`, {
+     status: 404,
+   });
+ }
+ const transformed = transformToShopifyStructure(collection.items);
+ collection.products = transformed.products;
+ collection.handle = collection.category_url.split('/')[1];
+ collection.title = collection.category_name;
+ collection.description = collection.category_description;
+ return {
+   collection,
+ };
+}
 ```
 In the above example, we simply translated the Fast Simon results to the form of Shopify GraphQL using `transformToShopifyStructure` in order to use Shopify template components, but this step is optional and not required if you have your own components. 
 
@@ -263,7 +282,7 @@ For deeper insight on how to render the streamed facets, please refer to the `Fi
 ## Search Results Page Usage
 ### Adding Fast Simon fetcher function to the root loader
 - Go to file `routes/search.tsx`
-- Invoke `getSearchResults` in your root loader function, passing the search query, page number, sort by and narrow
+- Invoke `getSearchResults` in your root loader function (at the same file), passing the search query, page number, sort by and narrow
 - Pass down the results to the search component.
 
 ```js
@@ -326,7 +345,7 @@ For more details on how to render the streamed facets, please refer to the `Filt
 ## Autocomplete Usage
 ### Adding getFastSimonAutocompleteResults function to the root loader
 - Go to file `routes/search.tsx`
-- Invoke `getAutocompleteResults` in your root loader function, passing the search query
+- Invoke `getAutocompleteResults` in your root loader function (at the same file), passing the search query
 - Pass down the results to the predictive search component.
 
 ```js
