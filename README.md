@@ -378,7 +378,7 @@ async function predictiveSearch({
   const {items} = await getFastSimonAutocompleteResults({request, context});
 
   if (!items) {
-    throw new Error('No predictive search data returned from Shopify API');
+    throw new Error('No Autocomplete data returned from Fast Simon API');
   }
 
   const total = Object.values(items).reduce(
