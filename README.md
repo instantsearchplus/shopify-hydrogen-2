@@ -51,15 +51,15 @@ This document will guide you to:
 Get started your implementation [Here](https://docs.fastsimon.com/hydrogen/docs/getting-started/GettingStarted)
 
 ## Build your own hydrogen storefront with Fast Simon
-- [Visual Similarity Usage](https://docs.fastsimon.com/hydrogen/docs/getting-started/VisualSimilarityUsage)
-- [Smart Collections Usage](https://docs.fastsimon.com/hydrogen/docs/getting-started/SmartCollections)
-- [Search Results Page Usage](https://docs.fastsimon.com/hydrogen/docs/getting-started/SearchResults)
-- [Autocomplete Usage Usage](https://docs.fastsimon.com/hydrogen/docs/getting-started/Autocomplete)
+- [Visual Similarity](https://docs.fastsimon.com/hydrogen/docs/getting-started/VisualSimilarityUsage)
+- [Smart Collections](https://docs.fastsimon.com/hydrogen/docs/getting-started/SmartCollections)
+- [Search Results Page](https://docs.fastsimon.com/hydrogen/docs/getting-started/SearchResults)
+- [Autocomplete Usage](https://docs.fastsimon.com/hydrogen/docs/getting-started/Autocomplete)
 
 
 ## More detailed examples and how to use the data and render it
 - Refer to this project components.
-- [Referance]()
+- [Referance](https://docs.fastsimon.com/hydrogen/docs/usages/)
 - [Demo site](https://demo-shopify-hydrogen.fastsimon.com/)
 
 
