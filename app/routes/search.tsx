@@ -6,7 +6,7 @@ import {SearchResults} from '~/components/SearchResults';
 import {getEmptyPredictiveSearchResult, type PredictiveSearchReturn, type RegularSearchReturn} from '~/lib/search';
 import {ProductItemFragment} from '../../storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
-import {PaginationBar, transformToShopifyStructure} from '@fast-simon/storefront-kit';
+import {FastSimonReporting, PaginationBar, transformToShopifyStructure} from '@fast-simon/storefront-kit';
 import {Narrow} from '@fast-simon/utilities';
 import {Filters} from '~/components/Filters';
 import {ResultsSummary} from '~/components/ResultsSummary';
@@ -55,7 +55,15 @@ async function getFastSimonAutocompleteResults({request, context}: LoaderFunctio
 export default function SearchPage() {
   const {type, term, result, error, facets, dashboardConfig} = useLoaderData<typeof loader>();
   if (type === 'predictive') return null;
-
+  const onProductClick = (productId: string) => {
+    FastSimonReporting.prepareProductSeenFromSerpData({
+      productId,
+      productPosition: result.ids.findIndex(id => id === productId) + 1,
+      query: term,
+      sortBy: result.sort_by,
+      pageNumber: result.p
+    })
+  }
   return (
     <div className="search">
       <h1>Search</h1>
@@ -86,7 +94,7 @@ export default function SearchPage() {
                 <ResultsSummary numberOfResults={result.term} pageTitle={result.total}/>
                 <SortByContainer serverSort={result.sort_by} dashboardConfig={dashboardConfig}/>
               </div>
-              <ProductsGrid products={result.items.products.nodes} />
+              <ProductsGrid products={result.items.products.nodes} onProductClick={onProductClick}/>
             </div>
           </div>
 
@@ -94,12 +102,12 @@ export default function SearchPage() {
           <PaginationBar total={result.total_p} />
         </>
       )}
-      <Analytics.SearchView data={{searchTerm: term, searchResults: result}} />
+      <Analytics.SearchView data={{searchTerm: term, searchResults: result}} customData={result} />
     </div>
   );
 }
 
-function ProductsGrid({products}) {
+function ProductsGrid({products, onProductClick}) {
   return (
     <div className="products-grid">
       {products.map((product, index) => {
@@ -108,6 +116,7 @@ function ProductsGrid({products}) {
             key={product.id}
             product={product}
             loading={index < 8 ? 'eager' : undefined}
+            onProductClick={onProductClick}
           />
         );
       })}
@@ -117,9 +126,11 @@ function ProductsGrid({products}) {
 function ProductItem({
                        product,
                        loading,
+                       onProductClick
                      }: {
   product: ProductItemFragment;
   loading?: 'eager' | 'lazy';
+  onProductClick: (productId: string) => void;
 }) {
   const variant = product.variants.nodes[0];
   const variantUrl = useVariantUrl(product.handle, variant.selectedOptions);
@@ -129,6 +140,7 @@ function ProductItem({
       key={product.id}
       prefetch="intent"
       to={variantUrl}
+      onClick={() => onProductClick(product.id)}
     >
       {product.featuredImage && (
         <Image

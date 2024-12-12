@@ -16,6 +16,15 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    connectSrc: ['https://ping.fastsimon.com'],
+    imgSrc: [
+      "'self'",
+      "https://cdn.shopify.com",
+      "https://shopify.com",
+      "https://demo-shopify.fastsimon.com",
+      "https://assets.instantsearchplus.com",
+      "http://magento.instantsearchplus.com"
+    ],
   });
 
   const body = await renderToReadableStream(
@@ -38,7 +47,7 @@ export default async function handleRequest(
   }
 
   responseHeaders.set('Content-Type', 'text/html');
-  responseHeaders.set('Content-Security-Policy', header + `; img-src 'self' https://cdn.shopify.com https://shopify.com https://demo-shopify.fastsimon.com https://assets.instantsearchplus.com http://magento.instantsearchplus.com;`);
+  responseHeaders.set('Content-Security-Policy', header);
   responseHeaders.set('Oxygen-Cache-Control', 'public, max-age=3600, stale-while-revalidate=600');
   return new Response(body, {
     headers: responseHeaders,

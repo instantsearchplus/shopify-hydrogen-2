@@ -14,6 +14,8 @@
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {
+    "@fast-simon/storefront-kit": "^1.1.1",
+    "@fast-simon/utilities": "1.0.7",
     "@remix-run/react": "^2.13.1",
     "@remix-run/server-runtime": "^2.13.1",
     "@shopify/hydrogen": "2024.10.0",
@@ -22,9 +24,7 @@
     "graphql-tag": "^2.12.6",
     "isbot": "^3.8.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@fast-simon/storefront-kit": "1.0.0",
-    "@fast-simon/utilities": "1.0.7"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.2",

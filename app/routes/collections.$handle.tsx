@@ -1,13 +1,14 @@
 import {defer, redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {
+  Analytics,
   CacheLong,
   Image,
   Money,
 } from '@shopify/hydrogen';
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
-import {transformToShopifyStructure, PaginationBar} from '@fast-simon/storefront-kit';
+import {transformToShopifyStructure, PaginationBar, FastSimonReporting} from '@fast-simon/storefront-kit';
 import {Filters} from '~/components/Filters';
 import {Narrow} from '@fast-simon/utilities';
 import {ResultsSummary} from '~/components/ResultsSummary';
@@ -85,7 +86,16 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 
 export default function Collection() {
   const {collection, facets, dashboardConfig} = useLoaderData<typeof loader>();
-
+  const onProductClick = (productId) => {
+    FastSimonReporting.prepareProductSeenFromCollectionData({
+      productId,
+      productPosition: collection.items.findIndex(item => item.id === productId) + 1,
+      sortBy: collection.sort_by,
+      pageNumber: collection.p,
+      categoryId: collection.category_id,
+      categoryName: collection.category_name
+    });
+  }
   return (
     <div className="collection">
       <h1>{collection.title}</h1>
@@ -97,15 +107,17 @@ export default function Collection() {
             <ResultsSummary numberOfResults={collection.total_results} pageTitle={collection.category_name}/>
             <SortByContainer serverSort={collection.sort_by} dashboardConfig={dashboardConfig}/>
           </div>
-          <ProductsGrid products={collection.products.nodes} />
+          <ProductsGrid products={collection.products.nodes} onProductClick={onProductClick}/>
         </div>
       </div>
       <br />
       <PaginationBar total={collection.total_p} />
+      <Analytics.CollectionView data={{collection: {handle: collection.handle, id: collection.category_id}}} customData={collection} />
     </div>
   );
 }
-function ProductsGrid({products}) {
+function ProductsGrid({products, onProductClick}) {
+
   return (
     <div className="products-grid">
       {products.map((product, index) => {
@@ -114,6 +126,7 @@ function ProductsGrid({products}) {
             key={product.id}
             product={product}
             loading={index < 8 ? 'eager' : undefined}
+            onProductClick={onProductClick}
           />
         );
       })}
@@ -123,9 +136,11 @@ function ProductsGrid({products}) {
 function ProductItem({
                        product,
                        loading,
+                       onProductClick
                      }: {
   product: ProductItemFragment;
   loading?: 'eager' | 'lazy';
+  onProductClick: (productId: string) => void;
 }) {
   const variant = product.variants.nodes[0];
   const variantUrl = useVariantUrl(product.handle, variant.selectedOptions).replace('?=', '');
@@ -136,6 +151,7 @@ function ProductItem({
       key={product.id}
       prefetch="intent"
       to={variantUrl}
+      onClick={() => onProductClick(product.id)}
     >
       {product.featuredImage && (
         <Image

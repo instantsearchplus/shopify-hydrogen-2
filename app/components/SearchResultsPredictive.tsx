@@ -7,6 +7,7 @@ import {
   type PredictiveSearchReturn,
 } from '~/lib/search';
 import {useAside} from './Aside';
+import {FastSimonReporting} from '@fast-simon/storefront-kit';
 
 type PredictiveSearchItems = PredictiveSearchReturn['result']['items'];
 
@@ -86,7 +87,7 @@ function SearchResultsPredictiveArticles({
   closeSearch,
 }: PartialPredictiveSearchResult<'articles'>) {
   if (!articles.length) return null;
-  console.log(articles);
+
   return (
     <div className="predictive-search-result" key="articles">
       <h5>Articles</h5>
@@ -128,7 +129,12 @@ function SearchResultsPredictiveCollections({
 }: PartialPredictiveSearchResult<'collections'>) {
 
   if (!collections.length) return null;
-
+  const onAutocompleteItemClicked = (collection) => {
+    FastSimonReporting.prepareCollectionSeenFromAutocompleteData({
+      collectionId: collection.id,
+      query: term.current
+    })
+  }
   return (
     <div className="predictive-search-result" key="collections">
       <h5>Collections</h5>
@@ -136,7 +142,7 @@ function SearchResultsPredictiveCollections({
         {collections.map((collection) => {
 
           return (
-            <li className="predictive-search-result-item" key={collection.id}>
+            <li className="predictive-search-result-item" key={collection.id} onClick={() => onAutocompleteItemClicked(collection)}>
               <Link onClick={closeSearch} to={collection.u}>
                 {collection.t && (
                   <Image
@@ -197,13 +203,22 @@ function SearchResultsPredictiveProducts({
   closeSearch,
 }: PartialPredictiveSearchResult<'products'>) {
   if (!products.length) return null;
+
+  const onAutocompleteItemClicked = (product) => {
+    FastSimonReporting.prepareProductSeenFromAutocompleteData({
+      productId: product.id,
+      query: term.current,
+      sku: product.s
+    })
+  }
+
   return (
-    <div className="predictive-search-result" key="products">
+    <div className="predictive-search-result" key="products" >
       <h5>Products</h5>
       <ul>
         {products.map((product) => {
           return (
-            <li className="predictive-search-result-item" key={product.id}>
+            <li className="predictive-search-result-item" key={product.id} onClick={() => onAutocompleteItemClicked(product)}>
               <Link to={product.u} onClick={closeSearch}>
                   <Image
                     alt={'autocomplete product image'}

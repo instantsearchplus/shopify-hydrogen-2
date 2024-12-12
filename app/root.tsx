@@ -16,6 +16,8 @@ import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import {FastSimonAnalytics} from '@fast-simon/storefront-kit';
+
 
 export type RootLoader = typeof loader;
 
@@ -78,6 +80,11 @@ export async function loader(args: LoaderFunctionArgs) {
       country: args.context.storefront.i18n.country,
       language: args.context.storefront.i18n.language,
     },
+    fastSimon: {
+      uuid: env.FAST_SIMON_UUID,
+      storeId: env.FAST_SIMON_STORE_ID,
+      storeDomain: env.PUBLIC_STORE_DOMAIN
+    }
   });
 }
 
@@ -149,6 +156,9 @@ export function Layout({children}: {children?: React.ReactNode}) {
             consent={data.consent}
           >
             <PageLayout {...data}>{children}</PageLayout>
+
+            <FastSimonAnalytics storeId={data.fastSimon.storeId} uuid={data.fastSimon.uuid} storeDomain={data.fastSimon.storeDomain}/>
+
           </Analytics.Provider>
         ) : (
           children
