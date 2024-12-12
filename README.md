@@ -48,7 +48,7 @@ This document will guide you to:
 
 ## Getting started
 
-Get started your implementation [Here](https://docs.fastsimon.com/hydrogen/docs/getting-started/GettingStarted)
+Get started your implementation [Here](https://docs.fastsimon.com/hydrogen/docs/getting-started/getting_started)
 
 ## Build your own hydrogen storefront with Fast Simon
 - [Visual Similarity](https://docs.fastsimon.com/hydrogen/docs/getting-started/VisualSimilarityUsage)
