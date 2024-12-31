@@ -2,7 +2,7 @@ import {createHydrogenContext} from '@shopify/hydrogen';
 import {AppSession} from '~/lib/session';
 import {CART_QUERY_FRAGMENT} from '~/lib/fragments';
 import {getLocaleFromRequest} from '~/lib/i18n';
-import {createFastSimonClient} from '@fast-simon/storefront-kit';
+import {createFastSimonClient, FastSimonSession} from '@fast-simon/storefront-kit';
 
 /**
  * The context implementation is separate from server.ts
@@ -21,9 +21,11 @@ export async function createAppLoadContext(
   }
 
   const waitUntil = executionContext.waitUntil.bind(executionContext);
-  const [cache, session] = await Promise.all([
+
+  const [cache, session, fastSimonSession] = await Promise.all([
     caches.open('hydrogen'),
     AppSession.init(request, [env.SESSION_SECRET]),
+    FastSimonSession.init(request, [env.SESSION_SECRET]),
   ]);
 
   const hydrogenContext = createHydrogenContext({
@@ -38,10 +40,20 @@ export async function createAppLoadContext(
     },
   });
 
-  const fastSimon = createFastSimonClient({cache, waitUntil, request, uuid: '3eb6c1d2-152d-4e92-9c29-28eecc232373', storeID: '55906173135'});
+  const fastSimon = createFastSimonClient({
+    cache,
+    waitUntil,
+    request,
+    uuid: '3eb6c1d2-152d-4e92-9c29-28eecc232373',
+    storeID: '55906173135',
+    fastSimonSession,
+    searchPersonalization: true,
+    collectionPersonalization: true
+  });
 
   return {
     ...hydrogenContext,
     fastSimon,
+    fastSimonSession
   };
 }

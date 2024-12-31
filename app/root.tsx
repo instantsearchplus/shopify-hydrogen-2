@@ -64,6 +64,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const {storefront, env} = args.context;
 
+
   return defer({
     ...deferredData,
     ...criticalData,
@@ -157,7 +158,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
           >
             <PageLayout {...data}>{children}</PageLayout>
 
-            <FastSimonAnalytics storeId={data.fastSimon.storeId} uuid={data.fastSimon.uuid} storeDomain={data.fastSimon.storeDomain}/>
+            <FastSimonAnalytics storeId={data.fastSimon.storeId} uuid={data.fastSimon.uuid} storeDomain={data.fastSimon.storeDomain} collectionPersonalization={true} searchPersonalization={true}/>
 
           </Analytics.Provider>
         ) : (

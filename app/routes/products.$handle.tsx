@@ -12,7 +12,7 @@ import {getVariantUrl} from '~/lib/variants';
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
-import {FastSimonWidget} from '@fast-simon/storefront-kit';
+import {FastSimonWidget, transformToShopifyStructure} from '@fast-simon/storefront-kit';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [{title: `Hydrogen | ${data?.product.title ?? ''}`}];
@@ -26,12 +26,13 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  const visualSimilarityProducts = args.context.fastSimon.getVisualSimilarityProducts({
+  const visualSimilarityProducts = await args.context.fastSimon.getVisualSimilarityProducts({
     props: {
       productId: criticalData.product.id
     }
   });
-  return defer({...deferredData, ...criticalData, visualSimilarityProducts});
+
+  return defer({...deferredData, ...criticalData, visualSimilarityProducts: transformToShopifyStructure(visualSimilarityProducts)});
 }
 
 /**
