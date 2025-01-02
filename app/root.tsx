@@ -17,6 +17,7 @@ import appStyles from '~/styles/app.css?url';
 import {PageLayout} from '~/components/PageLayout';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {FastSimonAnalytics} from '@fast-simon/storefront-kit';
+import {FastSimonTracking} from '~/components/FastSimonTracking';
 
 
 export type RootLoader = typeof loader;
@@ -158,7 +159,7 @@ export function Layout({children}: {children?: React.ReactNode}) {
           >
             <PageLayout {...data}>{children}</PageLayout>
 
-            <FastSimonAnalytics storeId={data.fastSimon.storeId} uuid={data.fastSimon.uuid} storeDomain={data.fastSimon.storeDomain} collectionPersonalization={true} searchPersonalization={true}/>
+            <FastSimonTracking storeId={data.fastSimon.storeId} uuid={data.fastSimon.uuid} storeDomain={data.fastSimon.storeDomain}/>
 
           </Analytics.Provider>
         ) : (
