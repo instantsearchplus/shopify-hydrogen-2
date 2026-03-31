@@ -1,13 +1,13 @@
-# Fast Simon & Shopify Integration
-Build Search and Discovery experience with Fast Simon, a Shopify Plus Certified Partner
+# [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) & Shopify Integration
+Build Search and Discovery experience with [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/), a Shopify Plus Certified Partner
 
 [Getting started guide](https://instantsearchplus.zendesk.com/hc/en-us/categories/360000839131-Getting-Started-with-Fast-Simon)
 
-## Hydrogen template: Skeleton with Fast Simon Visual Similarity, Smart Collection and Search Results Page
+## Hydrogen template: Skeleton with [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) Visual Similarity, Smart Collection and Search Results Page
 
 - Hydrogen is Shopify’s stack for headless commerce. Hydrogen is designed to dovetail with [Remix](https://remix.run/), Shopify’s full stack web framework. This template contains a **minimal setup** of components, queries and tooling to get started with Hydrogen.
 
-- This demo store is a clone of the demo-store template provided by Shopify with examples of how to integrate Fast Simon Search and Discovery.
+- This demo store is a clone of the demo-store template provided by Shopify with examples of how to integrate [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) Search and Discovery.
 
 - [Check out Fast Simon Shopify Hydrogen demo store](https://demo-shopify-hydrogen.fastsimon.com)
 
@@ -17,10 +17,10 @@ Build Search and Discovery experience with Fast Simon, a Shopify Plus Certified 
 
 ## What's included
 
-- Fast Simon Visual Similarity 
-- Fast Simon Smart Collections
-- Fast Simon Instant Search Autocomplete
-- Fast Simon Search Results Page
+- [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) Visual Similarity
+- [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) Smart Collections
+- [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) Instant Search Autocomplete
+- [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) Search Results Page
 - Remix
 - Hydrogen
 - Oxygen
@@ -32,25 +32,25 @@ Build Search and Discovery experience with Fast Simon, a Shopify Plus Certified 
 - Minimal setup of components and routes
 
 
-## Fast Simon For Shopify Hydrogen
-React NPM package to support Fast Simon tools in Shopify Hydrogen Projects.
+## [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) For Shopify Hydrogen
+React NPM package to support [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) tools in Shopify Hydrogen Projects.
 
-## What is Fast Simon for Shopify Hydrogen?
-Fast Simon Shopify Hydrogen is a React library to be used in Shopify Hydrogen apps.
-By installing the library on your Hydrogen-based Shopify storefront, you will be able to fetch Fast Simon data and render Fast Simon components in your app.
+## What is [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) for Shopify Hydrogen?
+[Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) Shopify Hydrogen is a React library to be used in Shopify Hydrogen apps.
+By installing the library on your Hydrogen-based Shopify storefront, you will be able to fetch [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) data and render [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) components in your app.
 
 ## Installation Guide
 This document will guide you to:
-* Configure your Shopify store ready for Fast Simon Shopify Hydrogen.
-* Install Fast Simon app on your Shopify store.
-* Install Fast Simon Shopify Hydrogen NPM library.
+* Configure your Shopify store ready for [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) Shopify Hydrogen.
+* Install [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) app on your Shopify store.
+* Install [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/) Shopify Hydrogen NPM library.
 * Render Visual Similarity widget. 
 
 ## Getting started
 
 Get started your implementation [Here](https://docs.fastsimon.com/hydrogen/docs/getting-started/getting_started)
 
-## Build your own hydrogen storefront with Fast Simon
+## Build your own hydrogen storefront with [Fast Simon](https://www.fastsimon.com/technologies/fast-simon-x-hydrogen/)
 - [Visual Similarity](https://docs.fastsimon.com/hydrogen/docs/getting-started/VisualSimilarityUsage)
 - [Smart Collections](https://docs.fastsimon.com/hydrogen/docs/getting-started/SmartCollections)
 - [Search Results Page](https://docs.fastsimon.com/hydrogen/docs/getting-started/SearchResults)
